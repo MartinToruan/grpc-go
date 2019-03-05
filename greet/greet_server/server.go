@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/MartinToruan/grpc-go-course/greet/greetpb"
+	"github.com/MartinToruan/grpc-go/greet/greetpb"
 	"google.golang.org/grpc"
 	"log"
 	"net"

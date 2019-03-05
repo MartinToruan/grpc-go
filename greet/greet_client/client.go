@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/MartinToruan/grpc-go-course/greet/greetpb"
+	"github.com/MartinToruan/grpc-go/greet/greetpb"
 	"google.golang.org/grpc"
 	"log"
 )
 
 func main(){
-	fmt.Println("Hello I'm a client")
+	fmt.Println("Hello I'm a client\n")
 
 	cc, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
 	if err != nil{
