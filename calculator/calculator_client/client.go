@@ -23,7 +23,10 @@ func main(){
 	//doUnary(c)
 
 	// Call PrimeNumberDecomposition
-	doPrimeNumberDecomposition(c)
+	//doPrimeNumberDecomposition(c)
+
+	// Call ComputeAverage service
+	doComputeAverage(c)
 }
 
 func doUnary(c calculatorpb.CalculatorServiceClient){
@@ -63,4 +66,26 @@ func doPrimeNumberDecomposition(c calculatorpb.CalculatorServiceClient){
 		fmt.Printf("%v ", res.Result)
 	}
 	fmt.Println()
+}
+
+func doComputeAverage(c calculatorpb.CalculatorServiceClient){
+	stream, err := c.ComputeAverage(context.Background())
+	if err != nil{
+		log.Fatalf("Error while call Compute Average Service: %v\n", err)
+	}
+
+	for i:=1;i<=4;i++{
+		err := stream.Send(&calculatorpb.ComputeAverageRequest{
+			Value: int32(i),
+		})
+		if err != nil {
+			log.Fatalf("Error while send request to Server: %v\n", err)
+		}
+	}
+	resp, err := stream.CloseAndRecv()
+	if err != nil{
+		log.Fatalf("Got Response Error from the server: %v\n", err)
+	}
+	fmt.Printf("Got Response from the server: %v\n", resp.Result)
+
 }

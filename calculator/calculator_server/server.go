@@ -54,12 +54,12 @@ func (*server) ComputeAverage(stream calculatorpb.CalculatorService_ComputeAvera
 	counter := 0
 	for {
 		req, err := stream.Recv()
-		fmt.Printf("Got an request from Client: %v\n", req)
 		if err == io.EOF {
 			return stream.SendAndClose(&calculatorpb.ComputeAverageResponse{
 				Result: result/float64(counter),
 			})
 		}
+		fmt.Printf("Got request from Client: %v\n", req)
 		if err != nil{
 			log.Fatalf("Error when get request from client: %v", err)
 			return err
