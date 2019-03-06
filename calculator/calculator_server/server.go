@@ -20,6 +20,7 @@ func (*server) Calculate(ctx context.Context, req *calculatorpb.CalculatorReques
 
 func (*server) PrimeNumberDecomposition(req *calculatorpb.PrimeNumberRequest, stream calculatorpb.CalculatorService_PrimeNumberDecompositionServer) error {
 	value := req.GetValue()
+	fmt.Printf("Got a request with message: %v\n", req)
 
 	// Prime Iterator
 	var k int32 = 2
@@ -27,7 +28,7 @@ func (*server) PrimeNumberDecomposition(req *calculatorpb.PrimeNumberRequest, st
 	// Start Generate Prime Number Decomposition
 	for {
 		// Stop when value is 0
-		if value == 0{
+		if value <= 1{
 			break
 		}
 
@@ -35,9 +36,11 @@ func (*server) PrimeNumberDecomposition(req *calculatorpb.PrimeNumberRequest, st
 			value /= k
 
 			// Push k to Client
-			return stream.Send(&calculatorpb.PrimeNumberResponse{
+			if err := stream.Send(&calculatorpb.PrimeNumberResponse{
 				Result: k,
-			})
+			}); err != nil {
+				return err
+			}
 		} else{
 			k++
 		}
