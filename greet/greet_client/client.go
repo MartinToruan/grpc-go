@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc"
 	"io"
 	"log"
+	"time"
 )
 
 func main(){
@@ -21,7 +22,37 @@ func main(){
 	c := greetpb.NewGreetServiceClient(cc)
 	//fmt.Printf("Created Client: %f", c)
 	//doUnary(c)
-	doStreamServer(c)
+	//doStreamServer(c)
+	doClientStream(c)
+}
+
+func doClientStream(c greetpb.GreetServiceClient){
+	stream, err := c.LongGreet(context.Background())
+	if err != nil{
+		log.Fatalf("Error while invoke the server: %v", err)
+		return
+	}
+
+	// Define List of Name
+	var nameRequest = make(map[string]string)
+	nameRequest["Martin"] = "Kristopel"
+	nameRequest["Markus"] = "Erikson"
+	nameRequest["Frans"] = "Kristian"
+	for firstName, lastName := range nameRequest{
+		stream.Send(&greetpb.LongGreetRequest{
+			Greeting: &greetpb.Greeting{
+				FirstName: firstName,
+				LastName: lastName,
+			},
+		})
+		time.Sleep(1000 * time.Millisecond)
+	}
+
+	resp, err := stream.CloseAndRecv()
+	if err != nil{
+		log.Fatalf("Error while get response from the server: %v", err)
+	}
+	fmt.Printf("Got Response from server: \n%v\n", resp.Result)
 }
 
 func doUnary(c greetpb.GreetServiceClient){
@@ -61,5 +92,4 @@ func doStreamServer(c greetpb.GreetServiceClient){
 		}
 		fmt.Printf("Got Response from GreetManyTimes: %v\n", resp.Result)
 	}
-
 }
