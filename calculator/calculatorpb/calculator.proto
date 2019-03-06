@@ -29,5 +29,5 @@ service CalculatorService{
     rpc Calculate(CalculatorRequest) returns (CalculatorResponse){};
 
     // Server Stream
-    rpc PrimeNumberDecomposition(PrimeNumberRequest) returns (PrimeNumberResponse) {};
+    rpc PrimeNumberDecomposition(PrimeNumberRequest) returns (stream PrimeNumberResponse) {};
 }
