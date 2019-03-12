@@ -94,6 +94,7 @@ func (*server) FindMaximum(stream calculatorpb.CalculatorService_FindMaximumServ
 				Result: val,
 			}); err != nil{
 				log.Fatalf("Error when sending response to client: %v", err)
+				return err
 			}
 		}
 	}
