@@ -41,6 +41,15 @@ message FindMaximumResponse{
     int32 result=1;
 }
 
+// SquareRoot Message
+message SquareRootRequest{
+    int32 value=1;
+}
+
+message SquareRootResponse{
+    int32 result=1;
+}
+
 service CalculatorService{
     // Unary
     rpc Calculate(CalculatorRequest) returns (CalculatorResponse){};
@@ -53,4 +62,8 @@ service CalculatorService{
 
     // BiDi Stream
     rpc FindMaximum(stream FindMaximumRequest) returns (stream FindMaximumResponse) {};
+
+    // SquareRoot
+    // This API will return error INVALID_ARGUMENT if the request value is negative
+    rpc SquareRoot(SquareRootRequest) returns (SquareRootResponse) {};
 }
