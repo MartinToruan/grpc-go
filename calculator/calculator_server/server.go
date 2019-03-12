@@ -87,6 +87,7 @@ func (*server) FindMaximum(stream calculatorpb.CalculatorService_FindMaximumServ
 		}
 
 		val := req.GetValue()
+		fmt.Printf("Got Request from client: %v\n", val)
 		if val > currentMax {
 			currentMax = val
 			if err:= stream.Send(&calculatorpb.FindMaximumResponse{
