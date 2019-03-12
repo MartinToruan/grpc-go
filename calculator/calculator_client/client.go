@@ -126,7 +126,6 @@ func doFindMaximum(c calculatorpb.CalculatorServiceClient){
 
 			// Check if Server finish Sending Response
 			if err == io.EOF{
-				close(doneChannel)
 				break
 			}
 
@@ -138,6 +137,7 @@ func doFindMaximum(c calculatorpb.CalculatorServiceClient){
 			res := resp.GetResult()
 			fmt.Printf("Got Response from server: %v\n", res)
 		}
+		close(doneChannel)
 	}()
 
 	<-doneChannel
