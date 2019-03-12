@@ -105,6 +105,7 @@ func (*server) FindMaximum(stream calculatorpb.CalculatorService_FindMaximumServ
 }
 
 func (*server) SquareRoot(ctx context.Context, req *calculatorpb.SquareRootRequest) (*calculatorpb.SquareRootResponse, error){
+	fmt.Printf("Got Request from client: %v\n", req)
 	value := req.GetValue()
 	if value < 0 {
 		return nil, status.Errorf(codes.InvalidArgument, "Got Negative Value")

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/MartinToruan/grpc-go/calculator/calculatorpb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
+	"google.golang.org/grpc/codes"
 	"io"
 	"log"
 	"time"
@@ -30,7 +32,10 @@ func main(){
 	//doComputeAverage(c)
 
 	// Call FindMaximum service
-	doFindMaximum(c)
+	//doFindMaximum(c)
+
+	// Call Error Handling example
+	doErrorHandlingExample(c)
 }
 
 func doUnary(c calculatorpb.CalculatorServiceClient){
@@ -142,5 +147,35 @@ func doFindMaximum(c calculatorpb.CalculatorServiceClient){
 
 	<-doneChannel
 	fmt.Println("Finish Process Response from server.")
+}
 
+func doErrorHandlingExample(c calculatorpb.CalculatorServiceClient){
+	// Success Call
+	sendRequest(c, 10)
+
+	// Error Call
+	sendRequest(c, -1)
+
+}
+
+func sendRequest(c calculatorpb.CalculatorServiceClient, num int32){
+	res, err := c.SquareRoot(context.Background(), &calculatorpb.SquareRootRequest{
+		Value: num,
+	})
+
+	if err != nil{
+		respErr, ok := status.FromError(err)
+		if ok {
+			// Actual Error from Google Golang gRPC
+			fmt.Println(respErr.Code())
+			fmt.Println(respErr.Message())
+
+			if respErr.Code() == codes.InvalidArgument {
+				fmt.Println("I think the client sent a negative number!")
+			}
+		} else{
+			log.Fatalf("Some Big Error appears: %v", err)
+		}
+	}
+	fmt.Printf("Result of square root of %v: %v\n", num, res.GetResult())
 }
