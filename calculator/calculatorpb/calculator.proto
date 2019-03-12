@@ -47,7 +47,7 @@ message SquareRootRequest{
 }
 
 message SquareRootResponse{
-    int32 result=1;
+    double result=1;
 }
 
 service CalculatorService{
