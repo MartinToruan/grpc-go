@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc"
 	"io"
 	"log"
+	"time"
 )
 
 func main(){
@@ -26,7 +27,10 @@ func main(){
 	//doPrimeNumberDecomposition(c)
 
 	// Call ComputeAverage service
-	doComputeAverage(c)
+	//doComputeAverage(c)
+
+	// Call FindMaximum service
+	doFindMaximum(c)
 }
 
 func doUnary(c calculatorpb.CalculatorServiceClient){
@@ -87,5 +91,56 @@ func doComputeAverage(c calculatorpb.CalculatorServiceClient){
 		log.Fatalf("Got Response Error from the server: %v\n", err)
 	}
 	fmt.Printf("Got Response from the server: %v\n", resp.Result)
+}
+
+func doFindMaximum(c calculatorpb.CalculatorServiceClient){
+	// create doneChannel
+	doneChannel := make(chan struct{})
+
+	// Create Client Stream
+	stream, err := c.FindMaximum(context.Background())
+	if err != nil {
+		log.Fatalf("Error while connect to the server: %v", err)
+	}
+
+	// Sending Stream Request
+	go func(){
+		listNumber := []int32{1, 5, 3, 6, 2, 20}
+		for _, v := range listNumber {
+			if err := stream.Send(&calculatorpb.FindMaximumRequest{
+				Value: v,
+			}); err != nil{
+				log.Fatalf("Error while sending request to the server: %v", err)
+			}
+			time.Sleep(3 * time.Second)
+		}
+		if err := stream.CloseSend(); err != nil{
+			log.Fatalf("Error while close close send stream to server: %v", err)
+		}
+	}()
+
+	// Receive Stream Response
+	go func(){
+		for{
+			resp, err := stream.Recv()
+
+			// Check if Server finish Sending Response
+			if err == io.EOF{
+				close(doneChannel)
+				break
+			}
+
+			if err != nil{
+				log.Fatalf("Error while receive response from the server: %v", err)
+				break
+			}
+
+			res := resp.GetResult()
+			fmt.Printf("Got Response from server: %v\n", res)
+		}
+	}()
+
+	<-doneChannel
+	fmt.Println("Finish Process Response from server.")
 
 }
