@@ -23,7 +23,67 @@ func main(){
 	//fmt.Printf("Created Client: %f", c)
 	//doUnary(c)
 	//doStreamServer(c)
-	doClientStream(c)
+	//doClientStream(c)
+	doBiDiStream(c)
+}
+
+func doBiDiStream(c greetpb.GreetServiceClient){
+	stream, err := c.GreetEveryone(context.Background())
+	if err != nil{
+		log.Fatalf("Error while invoke the server: %v", err)
+	}
+
+	// Initialize variable
+	chanDone := make(chan struct{})
+
+	// Send Request to the server
+	go func(){
+
+		// Define lIst of Name
+		var nameRequest = make(map[string]string)
+		nameRequest["Martin"] = "Kristopel"
+		nameRequest["Markus"] = "Erikson"
+		nameRequest["Frans"] = "Kristian"
+		for firstName, lastName := range nameRequest{
+			err := stream.Send(&greetpb.GreetEveryoneRequest{
+				Greeting: &greetpb.Greeting{
+					FirstName: firstName,
+					LastName: lastName,
+				},
+			})
+
+			if err != nil{
+				log.Fatalf("Error while send request to the server: %v", err)
+			}
+		}
+		if err := stream.CloseSend(); err != nil{
+			log.Fatalf("Error while Close stream to server: %v", err)
+		}
+	}()
+
+	// Get Response from the server
+	go func(){
+		for{
+			defer close(chanDone)
+			resp, err := stream.Recv()
+
+			// Check EOF
+			if err == io.EOF{
+				break
+			}
+
+			if err != nil{
+				log.Fatalf("Error while reading reponse from the server: %v", err)
+				return
+			}
+			fmt.Printf("Response from the server: %v\n", resp.Result)
+		}
+	}()
+
+	// Wait until process Done
+	<-chanDone
+	fmt.Println("Finish Greet EveryOne")
+
 }
 
 func doClientStream(c greetpb.GreetServiceClient){
