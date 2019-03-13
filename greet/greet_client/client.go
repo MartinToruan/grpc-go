@@ -27,7 +27,8 @@ func main(){
 	//doStreamServer(c)
 	//doClientStream(c)
 	//doBiDiStream(c)
-	doUnaryWithDeadline(c)
+	doUnaryWithDeadline(c, 5 * time.Second)
+	doUnaryWithDeadline(c, 1 * time.Second)
 }
 
 func doBiDiStream(c greetpb.GreetServiceClient){
