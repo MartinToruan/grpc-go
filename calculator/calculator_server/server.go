@@ -3,15 +3,16 @@ package main
 import (
 	"fmt"
 	"github.com/MartinToruan/grpc-go/calculator/calculatorpb"
+	"google.golang.org/grpc/reflection"
 	"math"
 
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/status"
-	"google.golang.org/grpc/codes"
-	"io"
-	"net"
-	"log"
 	"context"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"io"
+	"log"
+	"net"
 )
 
 type server struct{}
@@ -126,6 +127,9 @@ func main(){
 
 	s := grpc.NewServer()
 	calculatorpb.RegisterCalculatorServiceServer(s, &server{})
+
+	// Register reflection service on gRPC server
+	reflection.Register(s)
 
 	if err := s.Serve(lis); err != nil{
 		log.Fatalf("Can't Start the Server: %v\n", err)
