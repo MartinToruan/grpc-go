@@ -90,13 +90,43 @@ func (*server) ReadBlog(ctx context.Context, req *blogpb.ReadBlogRequest) (*blog
 	}
 
 	return &blogpb.ReadBlogResponse{
-		Blog: &blogpb.Blog{
-			Id: data.ID.Hex(),
-			AuthorId: data.AuthorID,
-			Title: data.Title,
-			Content: data.Content,
-		},
+		Blog: dataToBlogPb(data),
 	}, nil
+}
+
+func (*server) UpdateBlog(ctx context.Context, req *blogpb.UpdateBlogRequest) (*blogpb.UpdateBlogResponse, error){
+	blog := req.GetBlog()
+	objId, err := primitive.ObjectIDFromHex(blog.GetId())
+	if err != nil{
+		return nil, status.Errorf(
+			codes.InvalidArgument,
+			fmt.Sprint("Cannot parse ID"))
+	}
+
+	// Create empty struct
+	data := &blogItem{}
+	filter := bson.M{"_id": objId}
+
+	// Update data in Database
+	_, err = collection.UpdateOne(context.Background(), filter, data)
+	if err != nil{
+		return nil, status.Errorf(
+			codes.NotFound,
+			fmt.Sprintf("Can't update data in database: %v", err))
+	}
+
+	return &blogpb.UpdateBlogResponse{
+		Blog: dataToBlogPb(data),
+	}, nil
+}
+
+func dataToBlogPb(data *blogItem) *blogpb.Blog{
+	return &blogpb.Blog{
+		Id: data.ID.Hex(),
+		AuthorId: data.AuthorID,
+		Title: data.Title,
+		Content: data.Content,
+	}
 }
 
 func main(){
