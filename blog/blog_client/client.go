@@ -23,8 +23,9 @@ func main(){
 
 	//createBlog(c)
 
-	readBlog(c)
+	//readBlog(c)
 
+	updateBlog(c)
 }
 
 func createBlog(c blogpb.BlogServiceClient){
@@ -47,6 +48,8 @@ func readBlog(c blogpb.BlogServiceClient){
 	req := &blogpb.ReadBlogRequest{
 		BlogId: "5c908ead68bc2fc569ed31af",
 	}
+
+	// Call ReadBlog Service
 	resp, err := c.ReadBlog(context.Background(), req)
 	if err != nil{
 		// Parse and Print Error
@@ -67,4 +70,37 @@ func readBlog(c blogpb.BlogServiceClient){
 		return
 	}
 	fmt.Println("Response from server: %v", resp.GetBlog())
+}
+
+func updateBlog(c blogpb.BlogServiceClient){
+	fmt.Println("Update Blog")
+	req := &blogpb.UpdateBlogRequest{
+		Blog: &blogpb.Blog{
+			Id: "5c908ead68bc2fc569ed30af",
+			AuthorId: "Martin Kristopel",
+			Title: "Updated Field",
+			Content: "This is the updated field",
+		},
+	}
+
+	// Call UpdateBlog Service
+	resp, err := c.UpdateBlog(context.Background(), req)
+	if err != nil{
+		respErr, ok := status.FromError(err)
+		if ok {
+			fmt.Println(respErr.Code())
+			fmt.Println(respErr.Message())
+
+			if respErr.Code() == codes.InvalidArgument{
+				fmt.Println("Request is invalid.")
+			}
+			if respErr.Code() == codes.NotFound {
+				fmt.Println("Data not Found.")
+			}
+		} else{
+			log.Fatalf("Unexpected Error: %v", err)
+		}
+		return
+	}
+	fmt.Printf("Got response from the server: %v", resp.GetBlog())
 }

@@ -95,6 +95,7 @@ func (*server) ReadBlog(ctx context.Context, req *blogpb.ReadBlogRequest) (*blog
 }
 
 func (*server) UpdateBlog(ctx context.Context, req *blogpb.UpdateBlogRequest) (*blogpb.UpdateBlogResponse, error){
+	fmt.Println("Update Blog Request")
 	blog := req.GetBlog()
 	objId, err := primitive.ObjectIDFromHex(blog.GetId())
 	if err != nil{
@@ -104,19 +105,24 @@ func (*server) UpdateBlog(ctx context.Context, req *blogpb.UpdateBlogRequest) (*
 	}
 
 	// Create empty struct
-	data := &blogItem{}
+	data := blogItem{
+		AuthorID: blog.GetAuthorId(),
+		Title: blog.GetTitle(),
+		Content: blog.GetContent(),
+	}
 	filter := bson.M{"_id": objId}
 
 	// Update data in Database
-	_, err = collection.UpdateOne(context.Background(), filter, data)
+	_, err = collection.ReplaceOne(context.Background(), filter, data)
 	if err != nil{
 		return nil, status.Errorf(
 			codes.NotFound,
 			fmt.Sprintf("Can't update data in database: %v", err))
 	}
 
+	data.ID = objId
 	return &blogpb.UpdateBlogResponse{
-		Blog: dataToBlogPb(data),
+		Blog: dataToBlogPb(&data),
 	}, nil
 }
 
