@@ -25,7 +25,9 @@ func main(){
 
 	//readBlog(c)
 
-	updateBlog(c)
+	//updateBlog(c)
+
+	deleteBlog(c)
 }
 
 func createBlog(c blogpb.BlogServiceClient){
@@ -103,4 +105,26 @@ func updateBlog(c blogpb.BlogServiceClient){
 		return
 	}
 	fmt.Printf("Got response from the server: %v", resp.GetBlog())
+}
+
+func deleteBlog(c blogpb.BlogServiceClient){
+	fmt.Println("Delete Blog")
+	req := &blogpb.DeleteBlogRequest{
+		BlogId: "5c908eb668bc2fc569ed30b0",
+	}
+
+	// Call Delete Blog Service
+	resp, err := c.DeleteBlog(context.Background(), req)
+	if err != nil {
+		respStat, ok := status.FromError(err)
+		if ok{
+			fmt.Println(respStat.Code())
+			fmt.Println(respStat.Message())
+		} else{
+			log.Fatalf("Unexpected Error: %v", err)
+		}
+		return
+	}
+
+	fmt.Printf("Got response from the server: %v", resp.GetBlogId())
 }
