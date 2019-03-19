@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"io"
 	"log"
 )
 
@@ -27,7 +28,9 @@ func main(){
 
 	//updateBlog(c)
 
-	deleteBlog(c)
+	//deleteBlog(c)
+
+	getBlogList(c)
 }
 
 func createBlog(c blogpb.BlogServiceClient){
@@ -127,4 +130,25 @@ func deleteBlog(c blogpb.BlogServiceClient){
 	}
 
 	fmt.Printf("Got response from the server: %v", resp.GetBlogId())
+}
+
+func getBlogList(c blogpb.BlogServiceClient){
+	fmt.Println("Get Blog List")
+
+	resStream, err := c.ListBlog(context.Background(), &blogpb.ListBlogRequest{})
+	if err != nil{
+		log.Fatalf("Error while invoke the server: %v", err)
+	}
+	for {
+		resp, err := resStream.Recv()
+
+		if err == io.EOF{
+			break
+		}
+
+		if err != nil{
+			log.Fatalf("Got an error response from server: %v", err)
+		}
+		fmt.Printf("Got response from the server: %v\n", resp.GetBlog())
+	}
 }
