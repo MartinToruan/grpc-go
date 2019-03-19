@@ -127,6 +127,7 @@ func (*server) UpdateBlog(ctx context.Context, req *blogpb.UpdateBlogRequest) (*
 }
 
 func (*server) DeleteBlog(ctx context.Context, req *blogpb.DeleteBlogRequest) (*blogpb.DeleteBlogResponse, error){
+	fmt.Println("Delete Blog Request")
 	blogId := req.GetBlogId()
 	objId, err := primitive.ObjectIDFromHex(blogId)
 	if err != nil{
@@ -152,6 +153,45 @@ func (*server) DeleteBlog(ctx context.Context, req *blogpb.DeleteBlogRequest) (*
 	}
 
 	return &blogpb.DeleteBlogResponse{BlogId: req.GetBlogId()}, nil
+}
+
+func (*server) ListBlog(req *blogpb.ListBlogRequest, stream blogpb.BlogService_ListBlogServer) error{
+	fmt.Println("List Blog Request")
+
+	cur, err := collection.Find(context.Background(), nil)
+	if err != nil{
+		return status.Errorf(
+			codes.Internal,
+			fmt.Sprintf("Unexpected Error: %v", err))
+	}
+	defer func(){
+		_ = cur.Close(context.Background())
+	}()
+
+	for cur.Next(context.Background()){
+		// Create Empty Struct
+		data := &blogItem{}
+
+		// Decode
+		if err := cur.Decode(data); err != nil{
+			return status.Errorf(
+				codes.Internal,
+				fmt.Sprintf("Cannot parse data: %v", err))
+		}
+
+		if err := stream.Send(&blogpb.ListBlogResponse{Blog: dataToBlogPb(data)}); err != nil{
+			log.Fatalf("Unexpected Error: %v", err)
+		}
+
+	}
+
+	if cur.Err() != nil{
+		return status.Errorf(
+			codes.Internal,
+			fmt.Sprintf("Unexpected Error: %v", cur.Err()))
+	}
+
+	return nil
 }
 
 func dataToBlogPb(data *blogItem) *blogpb.Blog{
