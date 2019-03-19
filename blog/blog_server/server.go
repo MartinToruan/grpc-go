@@ -126,6 +126,34 @@ func (*server) UpdateBlog(ctx context.Context, req *blogpb.UpdateBlogRequest) (*
 	}, nil
 }
 
+func (*server) DeleteBlog(ctx context.Context, req *blogpb.DeleteBlogRequest) (*blogpb.DeleteBlogResponse, error){
+	blogId := req.GetBlogId()
+	objId, err := primitive.ObjectIDFromHex(blogId)
+	if err != nil{
+		return nil, status.Errorf(
+			codes.InvalidArgument,
+			fmt.Sprintf("Cannot parse ID: %v", err))
+	}
+
+	// Create filter
+	filter := bson.M{"_id": objId}
+
+	res, err := collection.DeleteOne(context.Background(), filter)
+	if err != nil{
+		return nil, status.Errorf(
+			codes.Internal,
+			fmt.Sprintf("Internal Error: %v", err))
+	}
+
+	if res.DeletedCount == 0 {
+		return nil, status.Errorf(
+			codes.NotFound,
+			fmt.Sprintf("Cannot found data in database: %v", err))
+	}
+
+	return &blogpb.DeleteBlogResponse{BlogId: req.GetBlogId()}, nil
+}
+
 func dataToBlogPb(data *blogItem) *blogpb.Blog{
 	return &blogpb.Blog{
 		Id: data.ID.Hex(),
@@ -184,6 +212,6 @@ func main(){
 	fmt.Println("Closing the listener...")
 	_  = lis.Close()
 	fmt.Println("Closing mongoDB Connection...")
-	client.Disconnect(ctx)
+	_ = client.Disconnect(ctx)
 	fmt.Println("End of Program...")
 }
