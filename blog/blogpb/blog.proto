@@ -20,6 +20,16 @@ message CreateBlogResponse{
     Blog blog=1; // Will have a blog id
 }
 
+// Read Blog
+message ReadBlogRequest{
+    string blog_id=1;
+}
+
+message ReadBlogResponse{
+    Blog blog=1;
+}
+
 service BlogService {
     rpc CreateBlog (CreateBlogRequest) returns (CreateBlogResponse);
+    rpc ReadBlog(ReadBlogRequest) returns (ReadBlogResponse); // Return NOT_FOUND if data not found
 }

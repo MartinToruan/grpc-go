@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/MartinToruan/grpc-go/blog/blogpb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"log"
 )
 
@@ -19,8 +21,9 @@ func main(){
 
 	c := blogpb.NewBlogServiceClient(cc)
 
-	createBlog(c)
+	//createBlog(c)
 
+	readBlog(c)
 
 }
 
@@ -37,4 +40,31 @@ func createBlog(c blogpb.BlogServiceClient){
 	}
 
 	fmt.Printf("Blog has been created: %v", resp)
+}
+
+func readBlog(c blogpb.BlogServiceClient){
+	fmt.Println("Read Blog")
+	req := &blogpb.ReadBlogRequest{
+		BlogId: "5c908ead68bc2fc569ed31af",
+	}
+	resp, err := c.ReadBlog(context.Background(), req)
+	if err != nil{
+		// Parse and Print Error
+		respErr, ok := status.FromError(err)
+		if ok{
+			fmt.Println(respErr.Code())
+			fmt.Println(respErr.Message())
+
+			if respErr.Code() == codes.InvalidArgument{
+				fmt.Println("Request is invalid.")
+			}
+			if respErr.Code() == codes.NotFound {
+				fmt.Println("Data not Found.")
+			}
+		} else{
+			log.Fatalf("Unexpected Error: %v", err)
+		}
+		return
+	}
+	fmt.Println("Response from server: %v", resp.GetBlog())
 }

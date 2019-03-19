@@ -176,6 +176,7 @@ func sendRequest(c calculatorpb.CalculatorServiceClient, num int32){
 		} else{
 			log.Fatalf("Some Big Error appears: %v", err)
 		}
+		return
 	}
 	fmt.Printf("Result of square root of %v: %v\n", num, res.GetResult())
 }
